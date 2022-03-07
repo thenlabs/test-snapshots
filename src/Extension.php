@@ -5,6 +5,7 @@ namespace ThenLabs\TestSnapshots;
 
 use PHPUnit\Runner\AfterTestHook;
 use PHPUnit\Runner\BeforeTestHook;
+use ThenLabs\TestSnapshots\Driver\AbstractDriver;
 
 /**
  * @author Andy Daniel Navarro Taño <andaniel05@gmail.com>

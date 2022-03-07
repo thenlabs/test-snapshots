@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace ThenLabs\TestSnapshots;
+namespace ThenLabs\TestSnapshots\Driver;
 
 /**
  * @author Andy Daniel Navarro Taño <andaniel05@gmail.com>

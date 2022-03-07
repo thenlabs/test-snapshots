@@ -1,7 +1,7 @@
 <?php
 
 use ThenLabs\TestSnapshots\Extension;
-use ThenLabs\TestSnapshots\AbstractDriver;
+use ThenLabs\TestSnapshots\Driver\AbstractDriver;
 
 testCase(function () {
     test(function () {
