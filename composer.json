@@ -1,0 +1,33 @@
+{
+    "name": "thenlabs/test-snapshots",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Andy Daniel Navarro Taño",
+            "email": "andaniel05@gmail.com"
+        }
+    ],
+    "require": {
+        "phpunit/phpunit": "^9.5",
+        "thenlabs/snapshots-comparator": "dev-main"
+    },
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.2",
+        "thenlabs/pyramidal-tests": "2.0.x-dev",
+        "thenlabs/class-builder": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "ThenLabs\\TestSnapshots\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ThenLabs\\TestSnapshots\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "fix": "./vendor/bin/php-cs-fixer fix",
+        "test": "./vendor/bin/pyramidal"
+    }
+}
