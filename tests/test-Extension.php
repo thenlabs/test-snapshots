@@ -69,4 +69,25 @@ testCase(function () {
 
         Extension::resetAll();
     });
+
+    test(function () {
+        $driver1 = $this->getMockBuilder(AbstractDriver::class)
+            ->setMethods(['reset'])
+            ->getMockForAbstractClass();
+        $driver1->expects($this->exactly(0))
+            ->method('reset')
+        ;
+
+        $driver2 = $this->getMockBuilder(AbstractDriver::class)
+            ->setMethods(['reset'])
+            ->getMockForAbstractClass();
+        $driver2->expects($this->once())
+            ->method('reset')
+        ;
+
+        Extension::addDriver('driver1', $driver1);
+        Extension::addDriver('driver2', $driver2);
+
+        Extension::reset('driver2');
+    });
 });

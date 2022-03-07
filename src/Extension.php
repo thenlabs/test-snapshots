@@ -54,4 +54,13 @@ class Extension implements BeforeTestHook, AfterTestHook
             $driver->reset();
         }
     }
+
+    public static function reset(string $driverName): void
+    {
+        $driver = static::$drivers[$driverName] ?? null;
+
+        if ($driver instanceof AbstractDriver) {
+            $driver->reset();
+        }
+    }
 }
