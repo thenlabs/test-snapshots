@@ -46,4 +46,11 @@ class Extension implements BeforeTestHook, AfterTestHook
     {
         static::$drivers[$name] = $driver;
     }
+
+    public static function resetAll(): void
+    {
+        foreach (static::$drivers as $driver) {
+            $driver->reset();
+        }
+    }
 }
