@@ -17,6 +17,8 @@ class Extension implements BeforeTestHook, AfterTestHook
      */
     protected static $drivers = [];
 
+    protected static $snapshots = [];
+
     public function executeBeforeTest(string $testName): void
     {
     }
@@ -62,5 +64,15 @@ class Extension implements BeforeTestHook, AfterTestHook
         if ($driver instanceof AbstractDriver) {
             $driver->reset();
         }
+    }
+
+    public static function clearDrivers(): void
+    {
+        static::$drivers = [];
+    }
+
+    public static function clearSnapshots(): void
+    {
+        static::$snapshots = [];
     }
 }
