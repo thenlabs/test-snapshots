@@ -205,6 +205,53 @@ testCase(function () {
         test(function () {
             $classBuilder = (new ClassBuilder())
                 ->extends(TestCase::class)
+                ->addMethod('test1', function () {
+                    Extension::addDriver('driver1', new class extends AbstractDriver {
+                        public function getData(): array
+                        {
+                            return [
+                                'key1' => 'value11',
+                                'key3' => 'value3',
+                                'key4' => 'value4',
+                            ];
+                        }
+
+                        public function reset(): void
+                        {
+                        }
+                    });
+                })->end()
+                ->install()
+            ;
+
+            $testCase = $classBuilder->newInstance();
+            $testName = $classBuilder->getFCQN().'::test1';
+
+            Extension::addDriver('driver1', new class extends AbstractDriver {
+                public function getData(): array
+                {
+                    return [
+                        'key1' => 'value1',
+                        'key2' => 'value2',
+                        'key3' => 'value3',
+                    ];
+                }
+
+                public function reset(): void
+                {
+                }
+            });
+
+            $this->extension->executeBeforeTest($testName);
+            $testCase->test1();
+            $this->extension->executeAfterTest($testName, 1.0);
+
+            $this->assertTrue(true);
+        });
+
+        test(function () {
+            $classBuilder = (new ClassBuilder())
+                ->extends(TestCase::class)
                 ->implements(SnapshotsPerTestInterface::class)
                 ->addMethod('test1', function () use (&$classBuilder) {
                     Extension::addDriver('driver1', new class extends AbstractDriver {

@@ -7,6 +7,7 @@ use Brick\VarExporter\VarExporter;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Runner\AfterTestHook;
 use PHPUnit\Runner\BeforeTestHook;
+use ReflectionClass;
 use ThenLabs\SnapshotsComparator\Comparator as SnapshotsComparator;
 use ThenLabs\SnapshotsComparator\ExpectationBuilder;
 use ThenLabs\TestSnapshots\Driver\AbstractDriver;
@@ -33,6 +34,10 @@ class Extension implements BeforeTestHook, AfterTestHook
 
     public function executeBeforeTest(string $testName): void
     {
+        if (false == $this->requireSnapshots($testName)) {
+            return;
+        }
+
         static::$snapshots[$testName] = [
             'before' => static::getSnapshot(),
             'after' => [],
@@ -41,6 +46,10 @@ class Extension implements BeforeTestHook, AfterTestHook
 
     public function executeAfterTest(string $testName, float $time): void
     {
+        if (false == $this->requireSnapshots($testName)) {
+            return;
+        }
+
         static::$snapshots[$testName]['after'] = static::getSnapshot();
 
         $snapshotsDiff = SnapshotsComparator::compare(
@@ -56,6 +65,14 @@ class Extension implements BeforeTestHook, AfterTestHook
                 "\nUnexpectations in snapshots:\n".VarExporter::export($unexpectations)
             );
         }
+    }
+
+    public function requireSnapshots(string $testName): bool
+    {
+        $testInfo = $this->getTestInfo($testName);
+        $class = new ReflectionClass($testInfo['class']);
+
+        return $class->isSubclassOf(SnapshotsPerTestInterface::class);
     }
 
     public function getTestInfo(string $testName): array
