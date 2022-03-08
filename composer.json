@@ -9,7 +9,8 @@
     ],
     "require": {
         "phpunit/phpunit": "^9.5",
-        "thenlabs/snapshots-comparator": "dev-main"
+        "thenlabs/snapshots-comparator": "dev-main",
+        "brick/varexporter": "^0.3.2"
     },
     "require-dev": {
         "friendsofphp/php-cs-fixer": "^3.2",

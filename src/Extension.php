@@ -3,8 +3,12 @@ declare(strict_types=1);
 
 namespace ThenLabs\TestSnapshots;
 
+use Brick\VarExporter\VarExporter;
+use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Runner\AfterTestHook;
 use PHPUnit\Runner\BeforeTestHook;
+use ThenLabs\SnapshotsComparator\Comparator as SnapshotsComparator;
+use ThenLabs\SnapshotsComparator\ExpectationBuilder;
 use ThenLabs\TestSnapshots\Driver\AbstractDriver;
 
 /**
@@ -17,14 +21,34 @@ class Extension implements BeforeTestHook, AfterTestHook
      */
     protected static $drivers = [];
 
-    protected static $snapshots = [];
+    protected static $snapshotsPerTest = [];
 
     public function executeBeforeTest(string $testName): void
     {
+        static::$snapshotsPerTest[$testName] = [
+            'before' => static::getSnapshot(),
+            'after' => [],
+            'expectations' => new ExpectationBuilder(),
+        ];
     }
 
     public function executeAfterTest(string $testName, float $time): void
     {
+        static::$snapshotsPerTest[$testName]['after'] = static::getSnapshot();
+
+        $snapshotsDiff = SnapshotsComparator::compare(
+            static::$snapshotsPerTest[$testName]['before'],
+            static::$snapshotsPerTest[$testName]['after'],
+            static::$snapshotsPerTest[$testName]['expectations'],
+        );
+
+        $unexpectations = $snapshotsDiff->getUnexpectations();
+
+        if (!empty($unexpectations)) {
+            throw new AssertionFailedError(
+                "\nUnexpectations:\n".VarExporter::export($unexpectations)
+            );
+        }
     }
 
     public function getTestInfo(string $testName): array
@@ -73,6 +97,6 @@ class Extension implements BeforeTestHook, AfterTestHook
 
     public static function clearSnapshots(): void
     {
-        static::$snapshots = [];
+        static::$snapshotsPerTest = [];
     }
 }
