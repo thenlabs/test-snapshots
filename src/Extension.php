@@ -21,32 +21,39 @@ class Extension implements BeforeTestHook, AfterTestHook
      */
     protected static $drivers = [];
 
-    protected static $snapshotsPerTest = [];
+    /**
+     * @var array<string, array>
+     */
+    protected static $snapshots = [];
+
+    /**
+     * @var array<string, ExpectationBuilder>
+     */
+    protected static $expectations = [];
 
     public function executeBeforeTest(string $testName): void
     {
-        static::$snapshotsPerTest[$testName] = [
+        static::$snapshots[$testName] = [
             'before' => static::getSnapshot(),
             'after' => [],
-            'expectations' => new ExpectationBuilder(),
         ];
     }
 
     public function executeAfterTest(string $testName, float $time): void
     {
-        static::$snapshotsPerTest[$testName]['after'] = static::getSnapshot();
+        static::$snapshots[$testName]['after'] = static::getSnapshot();
 
         $snapshotsDiff = SnapshotsComparator::compare(
-            static::$snapshotsPerTest[$testName]['before'],
-            static::$snapshotsPerTest[$testName]['after'],
-            static::$snapshotsPerTest[$testName]['expectations'],
+            static::$snapshots[$testName]['before'],
+            static::$snapshots[$testName]['after'],
+            static::getExpectationBuilderForTest($testName),
         );
 
         $unexpectations = $snapshotsDiff->getUnexpectations();
 
         if (!empty($unexpectations)) {
             throw new AssertionFailedError(
-                "\nUnexpectations:\n".VarExporter::export($unexpectations)
+                "\nUnexpectations in snapshots:\n".VarExporter::export($unexpectations)
             );
         }
     }
@@ -97,6 +104,32 @@ class Extension implements BeforeTestHook, AfterTestHook
 
     public static function clearSnapshots(): void
     {
-        static::$snapshotsPerTest = [];
+        static::$snapshots = [];
+    }
+
+    public static function expectSnapshotDiff(string $testName, array $expectations): void
+    {
+        $expectationBuilder = static::getExpectationBuilderForTest($testName);
+
+        if (array_key_exists('CREATED', $expectations)) {
+            $expectationBuilder->expectCreated($expectations['CREATED']);
+        }
+
+        if (array_key_exists('UPDATED', $expectations)) {
+            $expectationBuilder->expectUpdated($expectations['UPDATED']);
+        }
+
+        if (array_key_exists('DELETED', $expectations)) {
+            $expectationBuilder->expectDeleted($expectations['DELETED']);
+        }
+    }
+
+    public static function getExpectationBuilderForTest(string $testName): ExpectationBuilder
+    {
+        if (! isset(static::$expectations[$testName])) {
+            static::$expectations[$testName] = new ExpectationBuilder();
+        }
+
+        return static::$expectations[$testName];
     }
 }
