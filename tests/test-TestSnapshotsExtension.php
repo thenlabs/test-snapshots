@@ -4,16 +4,16 @@ use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\TestCase;
 use ThenLabs\ClassBuilder\ClassBuilder;
 use ThenLabs\TestSnapshots\Driver\AbstractDriver;
-use ThenLabs\TestSnapshots\Extension;
+use ThenLabs\TestSnapshots\TestSnapshotsExtension;
 use ThenLabs\TestSnapshots\SnapshotsPerTestInterface;
 
 testCase(function () {
     test(function () {
-        $this->assertEmpty(Extension::getSnapshot());
+        $this->assertEmpty(TestSnapshotsExtension::getSnapshot());
     });
 
     test(function () {
-        Extension::addDriver('driver1', new class extends AbstractDriver {
+        TestSnapshotsExtension::addDriver('driver1', new class extends AbstractDriver {
             public function getData(): array
             {
                 return [
@@ -27,7 +27,7 @@ testCase(function () {
             }
         });
 
-        Extension::addDriver('driver2', new class extends AbstractDriver {
+        TestSnapshotsExtension::addDriver('driver2', new class extends AbstractDriver {
             public function getData(): array
             {
                 return [
@@ -50,7 +50,7 @@ testCase(function () {
             ],
         ];
 
-        $this->assertEquals($expected, Extension::getSnapshot());
+        $this->assertEquals($expected, TestSnapshotsExtension::getSnapshot());
     });
 
     test(function () {
@@ -68,10 +68,10 @@ testCase(function () {
             ->method('reset')
         ;
 
-        Extension::addDriver('driver1', $driver1);
-        Extension::addDriver('driver2', $driver2);
+        TestSnapshotsExtension::addDriver('driver1', $driver1);
+        TestSnapshotsExtension::addDriver('driver2', $driver2);
 
-        Extension::resetAll();
+        TestSnapshotsExtension::resetAll();
     });
 
     test(function () {
@@ -89,18 +89,18 @@ testCase(function () {
             ->method('reset')
         ;
 
-        Extension::addDriver('driver1', $driver1);
-        Extension::addDriver('driver2', $driver2);
+        TestSnapshotsExtension::addDriver('driver1', $driver1);
+        TestSnapshotsExtension::addDriver('driver2', $driver2);
 
-        Extension::reset('driver2');
+        TestSnapshotsExtension::reset('driver2');
     });
 
     testCase(function () {
         setUp(function () {
-            Extension::clearSnapshots();
-            Extension::clearDrivers();
+            TestSnapshotsExtension::clearSnapshots();
+            TestSnapshotsExtension::clearDrivers();
 
-            $this->extension = new Extension();
+            $this->extension = new TestSnapshotsExtension();
         });
 
         test(function () {
@@ -134,7 +134,7 @@ testCase(function () {
             $testCase = $classBuilder->newInstance();
             $testName = $classBuilder->getFCQN().'::test1';
 
-            Extension::addDriver('driver1', new class extends AbstractDriver {
+            TestSnapshotsExtension::addDriver('driver1', new class extends AbstractDriver {
                 public function getData(): array
                 {
                     return [
@@ -161,7 +161,7 @@ testCase(function () {
                 ->extends(TestCase::class)
                 ->implements(SnapshotsPerTestInterface::class)
                 ->addMethod('test1', function () {
-                    Extension::addDriver('driver1', new class extends AbstractDriver {
+                    TestSnapshotsExtension::addDriver('driver1', new class extends AbstractDriver {
                         public function getData(): array
                         {
                             return [
@@ -182,7 +182,7 @@ testCase(function () {
             $testCase = $classBuilder->newInstance();
             $testName = $classBuilder->getFCQN().'::test1';
 
-            Extension::addDriver('driver1', new class extends AbstractDriver {
+            TestSnapshotsExtension::addDriver('driver1', new class extends AbstractDriver {
                 public function getData(): array
                 {
                     return [
@@ -206,7 +206,7 @@ testCase(function () {
             $classBuilder = (new ClassBuilder())
                 ->extends(TestCase::class)
                 ->addMethod('test1', function () {
-                    Extension::addDriver('driver1', new class extends AbstractDriver {
+                    TestSnapshotsExtension::addDriver('driver1', new class extends AbstractDriver {
                         public function getData(): array
                         {
                             return [
@@ -227,7 +227,7 @@ testCase(function () {
             $testCase = $classBuilder->newInstance();
             $testName = $classBuilder->getFCQN().'::test1';
 
-            Extension::addDriver('driver1', new class extends AbstractDriver {
+            TestSnapshotsExtension::addDriver('driver1', new class extends AbstractDriver {
                 public function getData(): array
                 {
                     return [
@@ -254,7 +254,7 @@ testCase(function () {
                 ->extends(TestCase::class)
                 ->implements(SnapshotsPerTestInterface::class)
                 ->addMethod('test1', function () use (&$classBuilder) {
-                    Extension::addDriver('driver1', new class extends AbstractDriver {
+                    TestSnapshotsExtension::addDriver('driver1', new class extends AbstractDriver {
                         public function getData(): array
                         {
                             return [
@@ -271,8 +271,7 @@ testCase(function () {
 
                     $testName = $classBuilder->getFCQN().'::test1';
 
-                    Extension::expectSnapshotDiff(
-                        $testName,
+                    TestSnapshotsExtension::expectSnapshotDiff(
                         [
                             'CREATED' => [
                                 'driver1' => [
@@ -289,7 +288,8 @@ testCase(function () {
                                     'key2' => 'value2',
                                 ],
                             ],
-                        ]
+                        ],
+                        $testName
                     );
                 })->end()
                 ->install()
@@ -298,7 +298,7 @@ testCase(function () {
             $testCase = $classBuilder->newInstance();
             $testName = $classBuilder->getFCQN().'::test1';
 
-            Extension::addDriver('driver1', new class extends AbstractDriver {
+            TestSnapshotsExtension::addDriver('driver1', new class extends AbstractDriver {
                 public function getData(): array
                 {
                     return [

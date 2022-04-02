@@ -15,7 +15,7 @@ use ThenLabs\TestSnapshots\Driver\AbstractDriver;
 /**
  * @author Andy Daniel Navarro Taño <andaniel05@gmail.com>
  */
-class Extension implements BeforeTestHook, AfterTestHook
+class TestSnapshotsExtension implements BeforeTestHook, AfterTestHook
 {
     /**
      * @var array<string, AbstractDriver>
@@ -67,7 +67,7 @@ class Extension implements BeforeTestHook, AfterTestHook
         }
     }
 
-    public function requireSnapshots(string $testName): bool
+    protected function requireSnapshots(string $testName): bool
     {
         $testInfo = $this->getTestInfo($testName);
         $class = new ReflectionClass($testInfo['class']);
@@ -75,7 +75,7 @@ class Extension implements BeforeTestHook, AfterTestHook
         return $class->isSubclassOf(SnapshotsPerTestInterface::class);
     }
 
-    public function getTestInfo(string $testName): array
+    protected function getTestInfo(string $testName): array
     {
         [$class, $method] = explode('::', $testName);
 
@@ -124,8 +124,13 @@ class Extension implements BeforeTestHook, AfterTestHook
         static::$snapshots = [];
     }
 
-    public static function expectSnapshotDiff(string $testName, array $expectations): void
+    public static function expectSnapshotDiff(array $expectations, string $testName = null): void
     {
+        if (null === $testName) {
+            $registeredTestsWithExpectations = array_keys(static::$expectations);
+            $testName = array_pop($registeredTestsWithExpectations);
+        }
+
         $expectationBuilder = static::getExpectationBuilderForTest($testName);
 
         if (array_key_exists('CREATED', $expectations)) {
@@ -141,7 +146,7 @@ class Extension implements BeforeTestHook, AfterTestHook
         }
     }
 
-    public static function getExpectationBuilderForTest(string $testName): ExpectationBuilder
+    protected static function getExpectationBuilderForTest(string $testName): ExpectationBuilder
     {
         if (! isset(static::$expectations[$testName])) {
             static::$expectations[$testName] = new ExpectationBuilder();
