@@ -3,19 +3,22 @@ declare(strict_types=1);
 
 namespace ThenLabs\TestSnapshots;
 
-use Brick\VarExporter\VarExporter;
-use PHPUnit\Framework\AssertionFailedError;
-use PHPUnit\Runner\AfterTestHook;
-use PHPUnit\Runner\BeforeTestHook;
 use ReflectionClass;
-use ThenLabs\SnapshotsComparator\Comparator as SnapshotsComparator;
-use ThenLabs\SnapshotsComparator\ExpectationBuilder;
+use PHPUnit\Runner\AfterTestHook;
+use Brick\VarExporter\VarExporter;
+use PHPUnit\Framework\Assert;
+use PHPUnit\Runner\BeforeTestHook;
+use PHPUnit\Runner\AfterTestErrorHook;
+use PHPUnit\Runner\AfterTestFailureHook;
+use PHPUnit\Framework\AssertionFailedError;
 use ThenLabs\TestSnapshots\Driver\AbstractDriver;
+use ThenLabs\SnapshotsComparator\ExpectationBuilder;
+use ThenLabs\SnapshotsComparator\Comparator as SnapshotsComparator;
 
 /**
  * @author Andy Daniel Navarro Taño <andaniel05@gmail.com>
  */
-class TestSnapshotsExtension implements BeforeTestHook, AfterTestHook
+class TestSnapshotsExtension implements BeforeTestHook, AfterTestHook, AfterTestErrorHook, AfterTestFailureHook
 {
     /**
      * @var array<string, AbstractDriver>
@@ -31,6 +34,11 @@ class TestSnapshotsExtension implements BeforeTestHook, AfterTestHook
      * @var array<string, ExpectationBuilder>
      */
     protected static $expectations = [];
+
+    /**
+     * @var array<string>
+     */
+    protected static $ignoredTests = [];
 
     public function executeBeforeTest(string $testName): void
     {
@@ -65,10 +73,26 @@ class TestSnapshotsExtension implements BeforeTestHook, AfterTestHook
                 "\nUnexpectations in snapshots:\n".VarExporter::export($unexpectations)
             );
         }
+
+        Assert::assertTrue(true);
+    }
+
+    public function executeAfterTestError(string $test, string $message, float $time): void
+    {
+        static::$ignoredTests[] = $test;
+    }
+
+    public function executeAfterTestFailure(string $test, string $message, float $time): void
+    {
+        static::$ignoredTests[] = $test;
     }
 
     protected function requireSnapshots(string $testName): bool
     {
+        if (in_array($testName, static::$ignoredTests)) {
+            return false;
+        }
+
         $testInfo = $this->getTestInfo($testName);
         $class = new ReflectionClass($testInfo['class']);
 
