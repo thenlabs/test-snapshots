@@ -124,10 +124,15 @@ class TestSnapshotsExtension implements BeforeTestHook, AfterTestHook
         static::$snapshots = [];
     }
 
+    public static function clearExpectations(): void
+    {
+        static::$expectations = [];
+    }
+
     public static function expectSnapshotDiff(array $expectations, string $testName = null): void
     {
         if (null === $testName) {
-            $registeredTestsWithExpectations = array_keys(static::$expectations);
+            $registeredTestsWithExpectations = array_keys(static::$snapshots);
             $testName = array_pop($registeredTestsWithExpectations);
         }
 
